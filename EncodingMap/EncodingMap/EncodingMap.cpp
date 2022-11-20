@@ -47,15 +47,13 @@ void MakeMapTable(unsigned short* pTable, size_t szTable, const char* lpString)
 			continue;
 		}
 
-		oldChar = *(unsigned short*)&lpString[iteString];
+		oldChar = *(unsigned short*)(lpString + iteString);
 		for (size_t iteTable = 0; iteTable < szTable; iteTable++)
 		{
 			if (pTable[iteTable] == oldChar)
 			{
 				newChar = iteTable + 0x8100;
-				*(unsigned char*)(&lpString[iteString]) = ((unsigned char*)(&newChar))[1];
-				*(unsigned char*)(&lpString[iteString + 1]) = ((unsigned char*)(&newChar))[0];
-
+				*(unsigned short*)(lpString + iteString) = newChar >> 8 | newChar << 8;
 				iteString++;
 				break;
 			}
@@ -65,9 +63,7 @@ void MakeMapTable(unsigned short* pTable, size_t szTable, const char* lpString)
 				pTable[iteTable] = oldChar;
 
 				newChar = iteTable + 0x8100;
-				*(unsigned char*)(&lpString[iteString]) = ((unsigned char*)(&newChar))[1];
-				*(unsigned char*)(&lpString[iteString + 1]) = ((unsigned char*)(&newChar))[0];
-
+				*(unsigned short*)(lpString + iteString) = newChar >> 8 | newChar << 8;;
 				iteString++;
 				break;
 			}
@@ -119,7 +115,8 @@ void MapString(unsigned short* pTable, const char* lpString)
 			continue;
 		}
 
-		MapCharacter(pTable, (unsigned short*)&lpString[i]);
+		MapCharacter(pTable, (unsigned short*)(lpString + i));
+
 		i++;
 	}
 }
