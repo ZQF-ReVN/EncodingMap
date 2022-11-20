@@ -60,7 +60,7 @@ void MakeMapTable(unsigned short* pTable, size_t szTable, const char* lpString)
 				break;
 			}
 
-			if (pTable[iteTable] == 0)
+			if (pTable[iteTable] == NULL)
 			{
 				pTable[iteTable] = oldChar;
 
@@ -75,15 +75,21 @@ void MakeMapTable(unsigned short* pTable, size_t szTable, const char* lpString)
 	}
 }
 
-void MapCharacter(unsigned short* pTable, char* lpChar)
+void MapCharacter(unsigned short* pTable, unsigned short* lpCharacter)
 {
-	unsigned short high = lpChar[0] << 8;
-	unsigned char low = lpChar[1];
-	size_t offset = (high + low) - 0x8100;
+	unsigned short high = lpCharacter[0] << 8;
+	unsigned short low = lpCharacter[0] >> 8;
+
+	if (high < 0x81)
+	{
+		return;
+	}
+
+	size_t offset = (high | low) - 0x8100;
 
 	if (offset >= 0x0 && offset <= 0x39C6)
 	{
-		*(unsigned short*)&lpChar[0] = pTable[offset];
+		lpCharacter[0] = pTable[offset];
 	}
 }
 
@@ -99,7 +105,7 @@ void SaveMapTable(unsigned short* pTable, size_t szTable)
 	}
 }
 
-void MapString(unsigned short* pTable, char* lpString)
+void MapString(unsigned short* pTable, const char* lpString)
 {
 	for (size_t i = 0; ; i++)
 	{
@@ -113,7 +119,7 @@ void MapString(unsigned short* pTable, char* lpString)
 			continue;
 		}
 
-		MapCharacter(pTable, &lpString[i]);
+		MapCharacter(pTable, (unsigned short*)&lpString[i]);
 		i++;
 	}
 }
@@ -144,7 +150,7 @@ void SJISRangeCheck(char* lpString)
 			continue;
 		}
 
-		//If Out Of Range Set To 0x68
+		//If Out Of Range Set Character To NULL
 		lpString[iteString] = 0x00;
 		lpString[iteString + 1] = 0x00;
 		iteString++;
